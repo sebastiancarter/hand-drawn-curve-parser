@@ -118,24 +118,27 @@ function submit()
     console.log(pixel.data);
     pixel = pixel.data;
 
-    for(var pX=0; pX<=(canvasXRange); pX+=20)
+    for(var pX=0; pX<(canvasXRange); pX+=20)
     {
-        var count = 0;
-        var sum = 0;
-            for(var pY=0; pY<=(canvasYRange); pY++)
+      var count = 0;
+      var sum = 0;
+        for(var pBucket=0; pBucket<20; pBucket++)
+        {
+            for(var pY=0; pY<(canvasYRange); pY++)
             {
-                pos = 4*(pX + canvasXRange*pY);
-                if( pixel[pos] >= 64)
+                pos = 4*(pX + pBucket + canvasXRange*pY);
+                if( pixel[pos] == 64)
                 {
                     sum+=pY;
-                    count+=1
-
+                    count+=1;
                 }
             }
+        }
         if(count > 0)
         {
             ave = sum / count;
-            console.log(ave)
+            console.log("sum: " + sum + "count: " + count)
+            console.log("ave: " + ave)
             buckets.push([pX, ave])
         }else{
             buckets.push([pX, 250])
@@ -160,8 +163,7 @@ function submit()
 // add this and check if it actually clears the points
 function clearall()
 {
-
-
+    context.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
