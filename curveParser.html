@@ -1,0 +1,407 @@
+<meta charset="utf-8">
+<html>
+
+<!--Begin external scripts-->
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
+<!--End external scripts-->
+
+<script type="text/javascript">
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////// PART 1 ////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var canvas, context, drawing = false;
+
+var currX = 0, currY = 0, oldX = 0, oldY = 0;
+
+var BucketNum = 5;
+
+var halfSizeOfBrush = 0.5;
+
+var image;
+
+var points = [];
+
+var canvasXRange = "890", canvasYRange = "445";
+
+var buckets = [];
+
+function init()
+{
+		
+	brush = document.getElementById('brushIMG');
+	   // 	image.onload = function(){
+	//			console.log('image loaded') };
+
+	canvas = document.getElementById('sebCan');
+	canvas.addEventListener("mousemove", function (ev) { ev_mouse("move", ev)}, false);
+	canvas.addEventListener("mousedown", function (ev) { ev_mouse("down", ev)}, false);
+	document.addEventListener("mouseup", function (ev) { ev_mouse("up", ev)}, false);
+	canvas.addEventListener("mouseout", function (ev) { ev_mouse("out", ev)}, false);
+	canvas.addEventListener("mousedrag", function (ev) { ev_mouse("drag", ev)}, false);
+	context = canvas.getContext('2d'); 
+}
+
+
+
+
+
+function ev_mouse(state, ev)
+{ 
+	if (state == 'down')
+	{
+		
+		oldX = currX;
+		oldY = currY;
+		currX = ev.clientX - canvas.offsetLeft;
+		currY = ev.clientY - canvas.offsetTop;
+		drawing = true;
+	}
+	
+	if (state == 'up') // || state == 'out') 
+	{	
+		drawing = false;
+		console.log("declick");
+		
+	}
+	
+	if ((state == 'move' || state == 'drag') && drawing == true)
+	{
+		oldX = currX;
+		oldY = currY;
+		currX = ev.clientX - canvas.offsetLeft;
+		currY = ev.clientY - canvas.offsetTop;
+		drawStamp();
+	}
+}
+
+
+function distanceBetween () 
+{
+	return Math.sqrt(Math.pow(currX - oldX, 2) + Math.pow(currY - oldY, 2));
+}
+
+function angleBetween () 
+{
+	return Math.atan2(currX - oldX, currY - oldY);
+}
+
+
+
+function drawStamp()
+{
+	const dist = distanceBetween();
+	const angle = angleBetween();
+	for (let i = 0; i < dist; i += 1) 
+	{
+		const x = oldX + (Math.sin(angle) * i) - halfSizeOfBrush;
+		const y = oldY + (Math.cos(angle) * i) - halfSizeOfBrush;
+		context.drawImage(brush, Math.round(x), Math.round(y));
+	}
+}
+
+
+
+
+
+// will collect the users x and yvals and convert to json which will be sent back to the start
+function submit()
+{
+	
+	for(pX=1; pX<=canvasXRange; pX+=20)
+	{
+		var count = 0;
+		var sum = 0;
+		for( pBucket=pX; pBucket<(pX+20); pBucket++)
+		{
+
+			for( pY=1; pY<=canvasYRange; pY++)
+			{
+				var pixel = context.getImageData(pX, pY, 1, 1)
+				pixel = pixel.data;
+				if( pixel[0] == 64 && pixel[1] == 64 && pixel[2] == 64)
+				{
+					sum+=pY;
+					count+=1
+
+				}
+			}
+
+
+		}
+
+
+		if( sum > 0)
+		{
+			ave = sum / count;
+			buckets.push([pX, ave]);
+		}
+
+
+	}
+    
+    console.log(buckets);
+    points = buckets;	
+    numActivePoints = points.length;
+	$("#part1Div").hide();
+	$("#part2Div").show();
+	
+	update();
+	
+}
+
+
+
+
+
+// add this and check if it actually clears the points
+function clearall()
+{
+
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////// PART 1 END ////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////// PART 2 //////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var curveTypes = [
+	{name: 'curveCatmullRom (α=0.5)', curve: d3.curveCatmullRom.alpha(0.5), active: true, lineString: '', clear: false, info: 'Similar to curveCardinal (tension=0) but with a parameter α that determines the parameterisation used to interpolate the points. If α=0.5 the parameterisation is centripetal and self intersecting loops are avoided.'},
+];
+
+var lineGenerator = d3.line();
+
+var categoryScale = d3.scaleOrdinal(d3.schemeCategory10);
+function colorScale(d) {return d === 0 ? '#777' : categoryScale(d);}
+
+//var points = [ [50, 200], [100, 330], [150, 200], [200, 75], [250, 75], [300, 300], [350, 250], [400, 200], [450, 330], [500, 200], [550, 75], [600, 75], [650, 300], [700, 250] ];
+var numActivePoints = points.length;
+
+var drag = d3.drag()
+	.on('drag', function(d, i) {
+	//	points[i][0] = d3.event.x;
+		points[i][1] = d3.event.y;
+		update();
+	});
+
+function updateInfo(info) {
+	d3.select('.info .default').style('display', info ? 'none' : 'inline');
+	d3.select('.info .text').text(info);
+}
+
+function updateMenu() {
+	var u = d3.select('.menu')
+		.selectAll('div.item')
+		.data(curveTypes);
+
+	u.enter()
+		.append('div')
+		.classed('item', true)
+		.style('clear', function(d) { return d.clear ? 'left' : 'none'; })
+		.text(function(d) { return d.name; })
+		.on('click', function(d) {
+			d.active = !d.active;
+			update();
+		})
+		.on('mouseover', function(d) { updateInfo(d.info); })
+		.on('mouseout', function() { updateInfo(''); })
+		.merge(u)
+		.style('background-color', function(d, i) { return d.active ? colorScale(i) : '#fff'; })
+		.style('color', function(d, i) { return d.active ? 'white' : '#444'; });
+}
+
+function updatePointsMenu() {
+	d3.select('.remove-point')
+		.classed('active', numActivePoints > 2)
+		.on('click', function() {
+			if(numActivePoints <= 2) return;
+			numActivePoints--;
+			update();
+		});
+
+	d3.select('.add-point')
+		.classed('active', numActivePoints < points.length)
+		.on('click', function() {
+			if(numActivePoints >= points.length) return;
+			numActivePoints++;
+			update();
+		});
+}
+
+function updateLines() {
+	curveTypes.forEach(function(d) {
+		if(!d.active) return;
+		lineGenerator.curve(d.curve);
+		d.lineString = lineGenerator(points.slice(0, numActivePoints));
+	});
+
+	var u = d3.select('svg g')
+		.selectAll('path')
+		.data(curveTypes);
+
+	u.enter()
+		.append('path')
+		.merge(u)
+		.style('stroke', function(d, i) { return colorScale(i); })
+		.attr('d', function(d) { return d.lineString;	})
+		.style('display', function(d) { return d.active ? 'inline' : 'none'; });
+}
+
+function updatePoints() {
+	var u = d3.select('g')
+		.selectAll('circle')
+		.data(points.slice(0, numActivePoints));
+
+	u.enter()
+		.append('circle')
+		.attr('r', 4)
+		.call(drag)
+		.merge(u)
+		.attr('cx', function(d) { return d[0];})
+		.attr('cy', function(d) { return d[1];});
+
+	u.exit().remove();
+}
+
+function update() {
+	updateMenu();
+	updatePointsMenu();
+	updateLines();
+	updatePoints();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////// PART 2 END ////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+</script>
+
+<body onload="init()">
+<div id="part1Div" onload="init()">
+<img id="brushIMG" src="./img/paintBrush.PNG" style="visibility:hidden;">
+<canvas id="sebCan" width="500" height="250" style="top:3%;left:2.5%;border:2px solid;"></canvas>
+    <input type="button" value="submit" id="btn" size="30" onclick="submit()" style="position:absolute;top:55%;left:10%;">
+    <input type="button" value="clear" id="clr" size="23" onclick="clearall()" style="position:absolute;top:55%;left:15%;">
+</div>
+
+
+
+
+
+
+
+<div id="part2Div" style="display:none;">
+<head>
+  <title>D3 Curve Explorer</title>
+</head>
+
+<style>
+body {
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 12px;
+	user-select: none;
+}
+svg {
+	box-shadow: 0px 0px 40px -5px rgba(0,0,0,0.3);
+	border-radius: 5px;
+	margin: 20px;
+}
+svg path {
+	fill: none;
+}
+svg circle {
+	fill: white;
+	stroke: #aaa;
+	cursor: move;
+}
+svg .points-menu g {
+	opacity: 0.2;
+}
+svg .points-menu g.active {
+	cursor: pointer;
+	opacity: 1;
+}
+svg .points-menu line {
+	stroke: #777;
+	stroke-width: 3;
+}
+svg .points-menu rect {
+	fill: white;
+}
+.sidebar {
+	display: inline-block;
+	position: relative;
+	vertical-align: top;
+	margin-top: 20px;
+	width: 530px;
+	color: #444;
+}
+.sidebar .header {
+	font-size: 14px;
+	font-weight: bold;
+	text-align: right;
+	color: #aaa;
+	width: 100%;
+}
+.menu .item {
+	padding: 5px;
+	border: 1px solid #ddd;
+	margin: 4px 2px;
+	float: left;
+	cursor: pointer;
+	border-radius: 8px;
+	width: 160px;
+	text-align: center;
+}
+.sidebar .info {
+	float: left;
+	margin-top: 20px;
+	line-height: 1.5em;
+}
+</style>
+
+  <svg width="500" height="250" style="	top:3%;left:2.5%;border:2px solid;">
+  	<g>
+  		<path></path>
+  		<g class="points-menu" transform="translate(660, 380)">
+  			<g class="remove-point">
+  				<rect x="-6" y="-6" width="12" height="12"></rect>
+  				<line x1="-6" x2="6"></line>
+  			</g>
+  			<g class="add-point" transform="translate(20,0)">
+  				<rect x="-6" y="-6" width="12" height="12"></rect>
+  				<line x1="-6" x2="6"></line><line y1="-6" y2="6"></line>
+  			</g>
+  		</g>
+  	</g>
+  </svg>
+
+  <div class="sidebar">
+  	<div class="header">YOU FOOL</div>
+	  <div class="menu"></div>
+	  <div class="info">
+	  	<span class="default"> You could have done better. I'm dissapointed in you. Make it right now or leave forever.</span>
+  		<span class="text"></span>
+	  </div>
+	</div>
+</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
