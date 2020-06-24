@@ -27,7 +27,7 @@ var image;
 
 var points = [];
 
-var canvasXRange = "890", canvasYRange = "445";
+var canvasXRange = "500", canvasYRange = "250";
 
 var buckets = [];
 
@@ -109,50 +109,48 @@ function drawStamp()
 
 
 
+
 // will collect the users x and yvals and convert to json which will be sent back to the start
 function submit()
 {
-	
-	for(pX=1; pX<=canvasXRange; pX+=20)
-	{
-		var count = 0;
-		var sum = 0;
-		for( pBucket=pX; pBucket<(pX+20); pBucket++)
-		{
+    var pos;
+    var pixel = context.getImageData(0, 0, 500, 250);
+    console.log(pixel.data);
+    pixel = pixel.data;
 
-			for( pY=1; pY<=canvasYRange; pY++)
-			{
-				var pixel = context.getImageData(pX, pY, 1, 1)
-				pixel = pixel.data;
-				if( pixel[0] == 64 && pixel[1] == 64 && pixel[2] == 64)
-				{
-					sum+=pY;
-					count+=1
+    for(var pX=0; pX<=(canvasXRange); pX+=20)
+    {
+        var count = 0;
+        var sum = 0;
+            for(var pY=0; pY<=(canvasYRange); pY++)
+            {
+                pos = 4*(pX + canvasXRange*pY);
+                if( pixel[pos] >= 64)
+                {
+                    sum+=pY;
+                    count+=1
 
-				}
-			}
+                }
+            }
+        if(count > 0)
+        {
+            ave = sum / count;
+            console.log(ave)
+            buckets.push([pX, ave])
+        }else{
+            buckets.push([pX, 250])
+        }
+        
+        
+    }
 
-
-		}
-
-
-		if( sum > 0)
-		{
-			ave = sum / count;
-			buckets.push([pX, ave]);
-		}
-
-
-	}
-    
-    console.log(buckets);
-    points = buckets;	
+    points = buckets;
     numActivePoints = points.length;
-	$("#part1Div").hide();
-	$("#part2Div").show();
-	
-	update();
-	
+    $("#part1Div").hide();
+    $("#part2Div").show();
+
+    update();
+
 }
 
 
@@ -307,6 +305,8 @@ function update() {
 
 <style>
 body {
+  
+  
   font-family: "Helvetica Neue", Helvetica, sans-serif;
   font-size: 12px;
 	user-select: none;
@@ -324,6 +324,7 @@ svg circle {
 	stroke: #aaa;
 	cursor: move;
 }
+
 svg .points-menu g {
 	opacity: 0.2;
 }
@@ -368,6 +369,9 @@ svg .points-menu rect {
 	margin-top: 20px;
 	line-height: 1.5em;
 }
+
+
+
 </style>
 
   <svg width="500" height="250" style="	top:3%;left:2.5%;border:2px solid;">
