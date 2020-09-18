@@ -1,0 +1,72 @@
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>iframe demo</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+            <h1>iframe-communication</h1>
+            <p>Basic two way iframe communicationator</p>
+        </header>
+        <section id="main-content">
+            <h3>
+            <p>Send Message: <button onclick="send()" id="message_button">yuh</button></p>
+            <p>Got Message:</p>
+            <div id="results"></div>
+            <br/>
+
+            <script>
+                var iframeSource = 'curveParser.html';
+                var parser = document.createElement('iframe');
+                parser.setAttribute('src', iframeSource);
+                parser.setAttribute('id', 'cParser');
+                parser.style.width = 2000 + 'px';
+                parser.style.height = 1000 +'px';
+                document.getElementById('main-content').appendChild(parser);
+
+                function send()
+                {
+                    console.log("oh YUH from stepDad.html");
+                    parser.contentWindow.postMessage('yuh', '*');
+                }
+
+                function bindEvent(element, eventName, eventHandler)
+                {
+                    if (element.addEventListener)
+                    {
+                        element.addEventListener(eventName, eventHandler, false);
+                    } else if (element.attachEvent) {
+                        element.attachEvent('on' + eventName, eventHandler);
+                    }
+                }
+
+                // Listen to message from child window
+                bindEvent(window, 'message', function (e) {
+                    let normalizedCoords = JSON.stringify(normCoords(JSON.parse(e.data)));
+                    results.innerHTML = normalizedCoords;
+                    // drawnLine is a global.
+                    drawnLine = normalizedCoords;
+                    console.log("this, from stepDad: ", this);
+                });
+            </script>
+
+        </section>
+    </div>
+
+</body>
+</html>
