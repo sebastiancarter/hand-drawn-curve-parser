@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>iframe demo</title>
+    <title>Curve Parser</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
@@ -20,13 +20,12 @@
 <body>
     <div class="wrapper">
         <header>
-            <h1>iframe-communication</h1>
-            <p>Basic two way iframe communicationator</p>
+            <h1>Curve Parser</h1>
         </header>
         <section id="main-content">
             <h3>
-            <p>Send Message: <button onclick="send()" id="message_button">yuh</button></p>
-            <p>Got Message:</p>
+            <button onclick="send()" id="message_button">send message</button>
+            <p>Message:</p>
             <div id="results"></div>
             <br/>
 
@@ -38,11 +37,11 @@
                 parser.style.width = 2000 + 'px';
                 parser.style.height = 1000 +'px';
                 document.getElementById('main-content').appendChild(parser);
-
+                console.log("called here");
+/*
                 function send()
                 {
-                    console.log("oh YUH from stepDad.html");
-                    parser.contentWindow.postMessage('yuh', '*');
+                    parser.contentWindow.postMessage('the message: ', '*');
                 }
 
                 function bindEvent(element, eventName, eventHandler)
@@ -57,12 +56,15 @@
 
                 // Listen to message from child window
                 bindEvent(window, 'message', function (e) {
-                    let normalizedCoords = JSON.stringify(normCoords(JSON.parse(e.data)));
-                    results.innerHTML = normalizedCoords;
+                    console.log("bind event was called");
+                    // let normalizedCoords = JSON.stringify(normCoords(JSON.parse(e.data)));
+                    // results.innerHTML = normalizedCoords;
+                    // results.innerHTML = e.data;
                     // drawnLine is a global.
-                    drawnLine = normalizedCoords;
+                    // drawnLine = normalizedCoords;
                     console.log("this, from stepDad: ", this);
                 });
+ */
             </script>
 
         </section>
