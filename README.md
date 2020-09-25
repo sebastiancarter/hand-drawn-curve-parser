@@ -9,7 +9,7 @@ User draws a line by hand which is then parsed into a digital Catmull-Rom spline
 * Install [Node.js](https://nodejs.org/en/download/)
 * Add it to you path, as necessary: `export PATH=$PATH:/usr/local/nodejs/bin`
 * Run this command: `$ node app.js`
-* Point your web browser to `localhost:3000`
+* Point your web browser to `localhost:3000/stepDad.html`
 * Draw a line in the purple box.
 * Drag the bubbles to change the line.
 
