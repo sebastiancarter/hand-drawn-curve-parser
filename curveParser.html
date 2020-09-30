@@ -95,14 +95,17 @@
             .attr("class", "y axis")
             .call(yAxis);
 
-        if(title == "todo: Add X axis tick label rotation bool to server object")
+        // if(title == "todo: Add X axis tick label rotation bool to server object")
+
+        // Conditionally rotate x axis tick labels.
+        if(!jsonObj.rotateTicks)
         {
-        // Add x axis
-        svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(xAxis)
-            .attr("id", "gxaxis");
+            // Add x axis
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis)
+                .attr("id", "gxaxis");
         } else {
              svg.append("g")
             .attr("class", "x axis")
