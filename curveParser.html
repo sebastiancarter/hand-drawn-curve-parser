@@ -95,8 +95,6 @@
             .attr("class", "y axis")
             .call(yAxis);
 
-        // if(title == "todo: Add X axis tick label rotation bool to server object")
-
         // Conditionally rotate x axis tick labels.
         if(!jsonObj.rotateTicks)
         {
@@ -198,7 +196,6 @@
                 drawing = true;
             }
         }
-        // let rightEdge = width / coordQuant * (coordQuant - 1)
         if (currX >= width) 
         {	
             drawing = false;
